@@ -1,5 +1,5 @@
 import React from 'react';
-import person from "../../public/images/person.png"
+import person from "@/../public/images/person.png"
 import Image from 'next/image';
 
 export default function Testimonials() {

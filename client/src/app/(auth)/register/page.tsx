@@ -1,109 +1,106 @@
-"use client";
+'use client';
+
 import React, { useState } from "react";
 import Image from "next/image";
-import loginImage from "../../../public/images/login.png";
+import loginImage from "@/../public/images/login.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import HeaderSignLogin from "../../components/Header";
-import axios from "axios";
-//import { useRouter } from "next/router";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema } from "@/validation/schemas"; // Replace with your Zod schema
+import { useCreateUserMutation } from "@/lib/services/auth"; // Replace with your Redux service
+
 export default function Signup() {
+  const [serverSuccessMessage, setServerSuccessMessage] = useState("");
+  const [serverErrorMessage, setServerErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [registerUser] = useCreateUserMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:8080/auth/google";
   };
-   const router=useRouter();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [correctPassword, setCorrectPassword] = useState("");
-
-  
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-  
-   // Check if email format is valid
-   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-   if (!emailPattern.test(email)) {
-     alert("Please enter a valid email address.");
-     return; // Prevent form submission if email is invalid
-   }
-
-   // Check if passwords match
-   if (password !== correctPassword) {
-     alert("Passwords do not match!");
-     return; // Prevent form submission if passwords don't match
-   }
-
-   // Check password length
-   if (password.length < 6) {
-     alert("Password must be at least 6 characters long.");
-     return; // Prevent form submission if password is too short
-   }
-
-    const signupData = {
-      name, // Use the state variable directly
-      email,
-      password,
-      confirmPassword: correctPassword, // Match the backend schema
-    };
-  
+  const onSubmit = async (values) => {
+    console.log(values);
+    setLoading(true);
     try {
-      const response = await axios.post("http://localhost:8080/api/signup", signupData, {
-        headers: {
-          "Content-Type": "application/json", // Ensure the request sends JSON data
-        },
-      });
-      console.log("Signup successful:", response.data);
-      router.push('/login'); 
-      // Handle success (e.g., navigate to another page or show a success message)
+      const response = await registerUser(values);
+      console.log("Response from loginUser:", response)
+      if (response.data && response.data.status === "success") {
+        setServerSuccessMessage(response.data.message);
+        setServerErrorMessage("");
+        reset();
+        setLoading(false);
+        router.push("/login");
+      }
+      if (response.error && "data" in response.error && (response.error.data as any ).status === "failed" ){
+        setServerErrorMessage(  (response.error.data as { message: string }).message );
+        setServerSuccessMessage("");
+        setLoading(false);
+      }
     } catch (error) {
-      console.error("Signup error:", error.response?.data || error.message);
-      // Display error message to the user if needed
+      setServerErrorMessage("An unexpected error occurred.");
+      setLoading(false);
     }
   };
-  
-
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EDF0FD] to-white">
-      <HeaderSignLogin />
-      <div className="mt-8 flex justify-center">
+      <div className="flex justify-center items-center h-screen">
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg flex">
           {/* Left Section with Image */}
           <div className="w-1/2 flex items-center justify-center">
-            <Image src={loginImage} alt="Login" width={400} height={330} />
+            <Image src={loginImage} alt="Signup" width={400} height={330} />
           </div>
 
           {/* Right Section with Form */}
           <div className="w-1/2 flex flex-col p-8 space-y-3">
             <h3 className="text-2xl font-bold text-black">Register</h3>
-            <p className="text-sm uppercase tracking-wide text-gray-500">
-              Join us
-            </p>
-            <form onSubmit={handleSubmit}>
+            <p className="text-sm uppercase tracking-wide text-gray-500">Join us</p>
+
+            {serverSuccessMessage && <div className="text-sm text-green-500 font-semibold px-2 text-center">{serverSuccessMessage}</div>}
+            {serverErrorMessage && <div className="text-red-500 text-sm">{serverErrorMessage}</div>}
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <label className="text-sm text-black">Your Name</label>
               <input
                 type="text"
                 placeholder="Enter your name"
                 className="h-11 w-full border border-gray-300 rounded-lg px-3"
-                onChange={(e) => {
-                  setName(e.target.value);
-                }}
+                {...register("name")}
               />
-              
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+              )}
 
               <label className="text-sm text-black">Email Address</label>
               <input
                 type="email"
                 placeholder="Enter your email"
                 className="h-11 w-full border border-gray-300 rounded-lg px-3"
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
+                {...register("email")}
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+              )}
 
               <label className="text-sm text-black">Password</label>
               <div className="relative">
@@ -111,15 +108,16 @@ export default function Signup() {
                   type="password"
                   placeholder="Enter your password"
                   className="h-11 w-full border border-gray-300 rounded-lg pl-10"
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                  }}
+                  {...register("password")}
                 />
                 <FontAwesomeIcon
                   icon={faLock}
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                 />
               </div>
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+              )}
 
               <label className="text-sm text-black">Confirm Password</label>
               <div className="relative">
@@ -127,26 +125,31 @@ export default function Signup() {
                   type="password"
                   placeholder="Confirm your password"
                   className="h-11 w-full border border-gray-300 rounded-lg pl-10"
-                  onChange={(e) => {
-                    setCorrectPassword(e.target.value);
-                  }}
+                  {...register("confirmPassword")}
                 />
                 <FontAwesomeIcon
                   icon={faLock}
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                 />
               </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+              )}
 
-              {/* Register Button */}
-              <button className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <span className="uppercase text-sm font-medium">Register</span>
+              <button
+                type="submit"
+                className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 uppercase text-sm font-medium"
+                disabled={loading}
+              >
+                {loading ? "Registering..." : "Register"}
               </button>
             </form>
+
             {/* Already a user link */}
             <div className="text-center">
               <Link href="/login">
                 <span className="text-xs uppercase text-gray-500">
-                  Already user? LOGIN here
+                  Already user? <span className="text-blue-600">LOGIN here</span>
                 </span>
               </Link>
             </div>

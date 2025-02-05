@@ -4,9 +4,7 @@ import Header from '@/components/Header';
 
 const ListingPage: React.FC = () => {
   return (
-    <div >
-    <Header/>
-    <div className="min-h-screen flex justify-center items-start bg-gradient-to-b from-[#EDF0FD] to-white">
+    <div className="min-h-screen flex justify-center items-start bg-gradient-to-b from-[#EDF0FD] to-white pt-20">
       <div className="w-full max-w-screen-lg mt-8 px-8  border-l-emerald-200 shadow-xl rounded-md   bg-slate-50 ">
         
         <div className="py-6">
@@ -79,7 +77,6 @@ const ListingPage: React.FC = () => {
               <button className="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700">Add Product</button>
         </div>
       </div>
-    </div>
     </div>
   );
 };

@@ -1,7 +1,6 @@
 // server/neo4j/neo4j.js
 import neo4j from 'neo4j-driver';
 import dotenv from 'dotenv';
-
 dotenv.config(); // Load environment variables from .env file
 
 let driver;

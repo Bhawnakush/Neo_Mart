@@ -28,7 +28,7 @@ function Home() {
   return (
     <div>
       <Header />
-      <div className="flex">
+      <div className="flex p-20">
         {/* Sidebar */}
         <div className="w-1/4 border-r p-4">
           <h2 className="font-semibold mb-4">Filter by Category</h2>

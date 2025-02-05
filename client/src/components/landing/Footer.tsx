@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import PSlogo from "../../public/images/play-store.png"
-import ASlogo from "../../public/images/app-store.png"
-import logo from "../../public/icons/logo.png"
+import PSlogo from "@/../public/images/play-store.png"
+import ASlogo from "@/../public/images/app-store.png"
+import logo from "@/../public/icons/logoo.png"
 
 const Footer: React.FC = () => {
   return (
